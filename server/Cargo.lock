@@ -3,12 +3,12 @@
 version = 3
 
 [[package]]
-name = "Server"
+name = "server"
 version = "0.1.0"
 dependencies = [
- "Shared",
+ "shared",
 ]
 
 [[package]]
-name = "Shared"
+name = "shared"
 version = "0.1.0"
