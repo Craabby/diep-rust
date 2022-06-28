@@ -1,5 +1,7 @@
 fn main()
 {
-    let _simulation = shared::Simulation::Simulation::New();
+    let mut simulation = shared::Simulation::Simulation::New();
+    simulation.CreateEntity();
+    println!("{:#?}", simulation);
 }
 

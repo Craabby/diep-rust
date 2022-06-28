@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Physics
 {
     pub ownerId: u32

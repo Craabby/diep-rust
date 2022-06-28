@@ -1,5 +1,6 @@
 use super::Components::{Physics::Physics, Camera::Camera};
 
+#[derive(Debug)]
 pub struct Entity
 {
     pub camera: Option<Camera>,

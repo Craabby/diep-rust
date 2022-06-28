@@ -3,6 +3,7 @@ use super::EntityComponentSystem::Components::Camera::Camera;
 use super::EntityComponentSystem::Entity::Entity;
 use super::Coder::{Reader::Reader, Writer::Writer};
 
+#[derive(Debug)]
 pub struct Simulation
 {
     // something the size of this really belongs on the heap
@@ -21,36 +22,42 @@ impl Simulation
         Simulation{entities: Box::new([NONE; MAX_ENTITIES as usize]), maxId: 0}
     }
 
-    pub fn CreateEntity(&self) -> Entity
+    pub fn CreateEntity(&mut self) -> &Entity
     {
         let entity = Entity::New();
-        
-        // TODO: generate ids
-
-        entity
-    }
-
-    fn GetNextId(&self) -> u32
-    {
         let mut id = 0;
-
-        loop
+        
+        // TODO: make this not slow
+        let maxId = self.maxId + 1;
+        for _ in 0..=maxId
         {
-            if self.entities[id as usize].is_none()
-                { return id; }
-            id += 1;
-            if id > MAX_ENTITIES
-            {
-                // TODO: delete old entities and try again
-                panic!("out of ids");
-            }
+            if id >= MAX_ENTITIES
+                {panic!("out of entity ids");}
+            if self.Exists(id)
+                {id += 1; continue;}
+
+            let entity = self.entities[id as usize].insert(entity);
+            entity.id = id;
+
+            if id > self.maxId
+                {self.maxId = id;}
+
+            break;
         }
+
+        return self.entities[id as usize].as_ref().unwrap();
     }
 
+    fn Exists(&self, id: u32) -> bool
+    {
+        self.entities[id as usize].is_some()
+    }
 
     fn FindEntitiesInView(&self, viewer: &Camera) -> Vec<u32>
     {
         let ids: Vec<u32> = vec![];
+
+
 
         ids
     }
