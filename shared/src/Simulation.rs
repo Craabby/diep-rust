@@ -10,7 +10,10 @@ pub struct Simulation
     // array of entities where the index is the id of the entity
     pub entities: Box<[Option<Entity>; MAX_ENTITIES as usize]>,
     // the largest id that any entity in this simulation has
-    pub maxId: u32
+    maxId: u32,
+    // the id to start at when looping through all ids.
+    // this eliminates looping through all of the first valid entities
+    startingId: u32
 }
 
 impl Simulation
@@ -19,22 +22,22 @@ impl Simulation
     {
         // bruh... https://github.com/rust-lang/rust/issues/44796
         const NONE: Option<Entity> = None;
-        Simulation{entities: Box::new([NONE; MAX_ENTITIES as usize]), maxId: 0}
+        Simulation{entities: Box::new([NONE; MAX_ENTITIES as usize]), maxId: 0, startingId: 0}
     }
 
     pub fn CreateEntity(&mut self) -> &Entity
     {
         let entity = Entity::New();
-        let mut id = 0;
         
         // TODO: make this not slow
         let maxId = self.maxId + 1;
-        for _ in 0..=maxId
+        let mut i = 0;
+        let mut id = 0;
+        for _ in 0..MAX_ENTITIES
         {
-            if id >= MAX_ENTITIES
-                {panic!("out of entity ids");}
+            id = (self.startingId + i) % MAX_ENTITIES;
             if self.Exists(id)
-                {id += 1; continue;}
+                {i += 1; continue;}
 
             let entity = self.entities[id as usize].insert(entity);
             entity.id = id;
@@ -44,6 +47,8 @@ impl Simulation
 
             break;
         }
+
+        self.startingId = (self.startingId + 1) % MAX_ENTITIES;
 
         return self.entities[id as usize].as_ref().unwrap();
     }
