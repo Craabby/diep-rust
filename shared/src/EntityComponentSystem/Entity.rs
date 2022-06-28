@@ -1,14 +1,16 @@
-use super::super::Simulation::Simulation;
+use super::Components::{Physics::Physics, Camera::Camera};
 
-pub struct Entity<'a>
+pub struct Entity
 {
-    simulation: &'a Simulation<'a>
+    pub camera: Option<Camera>,
+    pub physics: Option<Physics>,
+    pub id: u32
 }
 
-impl<'a> Entity<'a>
+impl Entity
 {
-    pub fn New(simulation: &'a Simulation) -> Entity<'a>
+    pub fn New() -> Entity
     {
-        return Entity{simulation};
+        return Entity{ camera: None, physics: None, id: 0 };
     }
 }

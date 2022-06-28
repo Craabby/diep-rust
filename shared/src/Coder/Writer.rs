@@ -7,6 +7,11 @@ pub struct Writer
 
 impl Writer
 {
+    pub fn New() -> Self
+    {
+        Writer{ data: vec![] }
+    }
+
     pub fn Data(&self) -> &Vec<u8>
     {
         &self.data
