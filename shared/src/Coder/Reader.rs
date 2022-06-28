@@ -17,14 +17,14 @@ impl Reader
 
     pub fn U16(&mut self) -> u16
     {
-        let value: u16 = (self.data[self.at] as u16) | ((self.data[self.at + 1] as u16) << 8);
+        let value = (self.data[self.at] as u16) | ((self.data[self.at + 1] as u16) << 8);
         self.at += 2;
         value
     }
 
     pub fn U32(&mut self) -> u32
     {
-        let value: u32 = (self.data[self.at] as u32) | ((self.data[self.at + 1] as u32) << 8) | ((self.data[self.at + 2] as u32) << 16) | ((self.data[self.at + 3] as u32) << 24);
+        let value = (self.data[self.at] as u32) | ((self.data[self.at + 1] as u32) << 8) | ((self.data[self.at + 2] as u32) << 16) | ((self.data[self.at + 3] as u32) << 24);
         self.at += 4;
         value
     }
@@ -32,7 +32,7 @@ impl Reader
     pub fn Vu(&mut self) -> u32
     {
         let mut out = 0;
-        let mut i: u32 = 0;
+        let mut i = 0;
 
         while (self.data[self.at] & 0x80) == 0x80
         {

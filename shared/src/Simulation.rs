@@ -9,8 +9,6 @@ pub struct Simulation
     // something the size of this really belongs on the heap
     // array of entities where the index is the id of the entity
     pub entities: Box<[Option<Entity>; MAX_ENTITIES as usize]>,
-    // the largest id that any entity in this simulation has
-    maxId: u32,
     // the id to start at when looping through all ids.
     // this eliminates looping through all of the first valid entities
     startingId: u32
@@ -22,13 +20,19 @@ impl Simulation
     {
         // bruh... https://github.com/rust-lang/rust/issues/44796
         const NONE: Option<Entity> = None;
-        Simulation{entities: Box::new([NONE; MAX_ENTITIES as usize]), maxId: 0, startingId: 0}
+        Simulation{entities: Box::new([NONE; MAX_ENTITIES as usize]), startingId: 0}
     }
 
-    pub fn CreateEntity(&mut self) -> &Entity
+    pub fn DeleteEntity(&mut self, id: u32)
     {
-        let entity = Entity::New();
+        if !self.Exists(id)
+            {panic!("deleting nonexistant entity");}
         
+        self.entities[id as usize] = None;
+    }
+
+    pub fn CreateEntity(&mut self) -> u32
+    {
         let mut i = 0;
         let mut id = 0;
         for _ in 0..MAX_ENTITIES
@@ -37,18 +41,16 @@ impl Simulation
             if self.Exists(id)
                 {i += 1; continue;}
 
+            let entity = Entity::New();
             let entity = self.entities[id as usize].insert(entity);
             entity.id = id;
-
-            if id > self.maxId
-                {self.maxId = id;}
 
             break;
         }
 
         self.startingId = (self.startingId + 1) % MAX_ENTITIES;
 
-        return self.entities[id as usize].as_ref().unwrap();
+        return self.entities[id as usize].as_ref().unwrap().id;
     }
 
     fn Exists(&self, id: u32) -> bool
@@ -58,7 +60,7 @@ impl Simulation
 
     fn FindEntitiesInView(&self, viewer: &Camera) -> Vec<u32>
     {
-        let ids: Vec<u32> = vec![];
+        let ids = vec![];
 
 
 
@@ -68,12 +70,12 @@ impl Simulation
     fn GetUpdateType(&self, viewer: &Camera, entity: &Entity) -> EntityUpdateType
     {
         // dont know what to do with the entity = dont send it
-        let updateType: EntityUpdateType = EntityUpdateType::Private;
+        let updateType = EntityUpdateType::Private;
 
         if entity.camera.is_some() && entity.camera.as_ref().unwrap().ownerId != viewer.ownerId
         { return EntityUpdateType::Private; }
     
-        let entitiesInView: Vec<u32> = self.FindEntitiesInView(viewer);
+        let entitiesInView = self.FindEntitiesInView(viewer);
 
         EntityUpdateType::Private
     }
