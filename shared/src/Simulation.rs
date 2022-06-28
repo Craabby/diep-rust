@@ -29,8 +29,6 @@ impl Simulation
     {
         let entity = Entity::New();
         
-        // TODO: make this not slow
-        let maxId = self.maxId + 1;
         let mut i = 0;
         let mut id = 0;
         for _ in 0..MAX_ENTITIES
