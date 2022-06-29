@@ -8,6 +8,11 @@ pub struct Reader
 
 impl Reader
 {
+    pub fn New(data: Vec<u8>) -> Self
+    {
+        Self{data, at: 0}
+    }
+
     pub fn U8(&mut self) -> u8
     {
         let value = self.data[self.at];
@@ -36,9 +41,10 @@ impl Reader
 
         while (self.data[self.at] & 0x80) == 0x80
         {
-            out |= ((self.U8() & 0x7f) as u32) << i;
+            out |= (self.U8() as u32 & 0x7f) << i;
             i += 7;
         }
+        out |= (self.U8() as u32 & 0x7f) << i;
 
         out
     }

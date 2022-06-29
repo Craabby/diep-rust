@@ -40,6 +40,8 @@ impl Simulation
         for _ in 0..MAX_ENTITIES
         {
             id = (self.startingId + i) % MAX_ENTITIES;
+            if id == 0
+                {i += 1; continue;}
             if self.Exists(id)
                 {i += 1; continue;}
 
@@ -51,7 +53,7 @@ impl Simulation
 
         self.startingId = (self.startingId + 1) % MAX_ENTITIES;
 
-        return self.entities[id as usize].as_ref().unwrap().id;
+        id
     }
 
     fn Exists(&self, id: u32) -> bool
@@ -63,6 +65,7 @@ impl Simulation
     {
         let mut ids = vec![];
 
+        // TODO: only send entities near
         // TODO: spatial hashing
         for id in 0..MAX_ENTITIES
         {
@@ -171,6 +174,34 @@ impl Simulation
 
     pub fn ReadBinary(&mut self, reader: &mut Reader)
     {
-        let _ = reader;
+        loop
+        {
+            let id = reader.Vu();
+            if id == 0
+                {break;}
+            self.DeleteEntity(id)
+        }
+
+        loop
+        {
+            let id = reader.Vu();
+            if id == 0
+                {break;}
+            if self.Exists(id)
+                {panic!("tried to update nonexistant entity");}
+            self.GetEntity(id).ReadBinaryUpdate(reader);    
+        }
+
+
+        loop
+        {
+            let id = reader.Vu();
+            if id == 0
+                {break;}
+
+            self.entities[id as usize] = Some(Entity::New());
+            self.GetEntity(id).id = id;
+            self.GetEntity(id).ReadBInaryCreation(reader);
+        }
     }
 }

@@ -19,7 +19,7 @@ impl Entity
 
     pub fn WriteBinaryUpdate(&self, writer: &mut Writer)
     {
-
+        self.WriteBinaryComponents(writer)
     }
 
     pub fn WriteBinaryCreation(&self, writer: &mut Writer)
@@ -31,10 +31,10 @@ impl Entity
 
         writer.Vu(componentFlags);
 
-        self.WriteComponents(writer);
+        self.WriteBinaryComponents(writer);
     }
 
-    fn WriteComponents(&self, writer: &mut Writer)
+    fn WriteBinaryComponents(&self, writer: &mut Writer)
     {
         if self.camera.is_some()
             {self.camera.as_ref().unwrap().WriteBinary(writer);}
@@ -42,8 +42,31 @@ impl Entity
             {self.physics.as_ref().unwrap().WriteBinary(writer);}
     }
 
-    pub fn ReadBinary(&mut self, reader: &mut Reader)
+    fn ReadBinaryComponents(&mut self, reader: &mut Reader)
     {
+        match self.camera.as_mut()
+        {
+            None => {}
+            Some(x) => x.ReadBinary(reader)
+        };
+        match self.physics.as_mut()
+        {
+            None => {}
+            Some(x) => x.ReadBinary(reader)
+        };
+    }
 
+    pub fn ReadBinaryUpdate(&mut self, reader: &mut Reader)
+    {
+        self.ReadBinaryComponents(reader)
+    }
+
+    pub fn ReadBInaryCreation(&mut self, reader: &mut Reader)
+    {
+        let componentFlags = reader.Vu();
+        if (componentFlags & (1 << Camera::ID)) != 0
+            {self.camera = Some(Camera::New(self.id));}
+        if (componentFlags & (1 << Physics::ID)) != 0
+            {self.physics = Some(Physics::New(self.id));}
     }
 }

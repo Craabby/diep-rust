@@ -1,4 +1,4 @@
-use crate::Coder::Writer::Writer;
+use crate::Coder::{Writer::Writer, Reader::Reader};
 
 #[derive(Debug)]
 pub struct Physics
@@ -16,6 +16,10 @@ impl Physics
     }
 
     pub fn WriteBinary(&self, writer: &mut Writer)
+    {
+    }
+
+    pub fn ReadBinary(&mut self, reader: &mut Reader)
     {
     }
 }

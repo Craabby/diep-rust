@@ -1,4 +1,4 @@
-use crate::Coder::Writer::Writer;
+use crate::Coder::{Writer::Writer, Reader::Reader};
 
 #[derive(Debug)]
 pub struct Camera
@@ -17,6 +17,10 @@ impl Camera
     }
 
     pub fn WriteBinary(&self, writer: &mut Writer)
+    {
+    }
+
+    pub fn ReadBinary(&mut self, reader: &mut Reader)
     {
     }
 }
