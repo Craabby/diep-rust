@@ -120,9 +120,8 @@ impl Simulation
                 let mut entities = vec![];
                 for id in 0..MAX_ENTITIES
                 {
-                    if !self.Exists(id)
-                        {break;}
-                    entities.push(id);
+                    if self.Exists(id)
+                        {entities.push(id);}
                 }
 
                 entities
