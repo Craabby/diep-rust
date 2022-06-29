@@ -7,4 +7,4 @@ pub enum EntityUpdateType
     Private
 }
 
-pub const MAX_ENTITIES: u32 = 5;
+pub const MAX_ENTITIES: u32 = 4;

@@ -46,10 +46,10 @@ impl Writer
     {
         loop
         {
-            let mut byte: u8 = value as u8;
+            let mut byte = value as u8;
+            value >>= 7;
             if value != 0
                 { byte |= 128; }
-            value >>= 7;
             self.U8(byte);
             if value == 0
                 { break; }
