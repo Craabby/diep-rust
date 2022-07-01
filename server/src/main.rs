@@ -3,7 +3,6 @@ use shared::{Coder::{Writer::Writer, Reader::Reader}, EntityComponentSystem::Com
 fn main()
 {
     let mut simulation = shared::Simulation::Simulation::New();
-    let mut simulation2 = shared::Simulation::Simulation::New();
     simulation.CreateEntity();
     simulation.CreateEntity();
     simulation.CreateEntity();
@@ -17,12 +16,11 @@ fn main()
     simulation.GetEntity(3).physics = Some(Physics::New(3));
 
     let mut writer = Writer::New();
-    let mut writer2 = Writer::New();
-    simulation.WriteBinary(&mut writer, None);
-    let mut reader = Reader::New(writer.Data().to_vec());
-    simulation2.ReadBinary(&mut reader);
-    simulation2.WriteBinary(&mut writer2, None);
+    simulation.WriteBinary(&mut writer, Some(3));
     println!("{:#?}", writer.Data());
-    println!("{:#?}", writer2.Data());
+    let mut writer = Writer::New();
+    simulation.WriteBinary(&mut writer, Some(3));
+    println!("{:#?}", writer.Data());
 }
+
 

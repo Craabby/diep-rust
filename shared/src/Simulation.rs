@@ -1,16 +1,13 @@
-use std::ops::DerefMut;
-
 use super::Types::{EntityUpdateType, MAX_ENTITIES};
-use super::EntityComponentSystem::Components::Camera::Camera;
 use super::EntityComponentSystem::Entity::Entity;
 use super::Coder::{Reader::Reader, Writer::Writer};
 
 #[derive(Debug)]
 pub struct Simulation
 {
-    // something the size of this really belongs on the heap
     // array of entities where the index is the id of the entity
-    pub entities: Box<[Option<Entity>; MAX_ENTITIES as usize]>,
+    // do not refrence this array, instead you should use GetEntity or GetConstEntity
+    entities: Box<[Option<Entity>; MAX_ENTITIES as usize]>,
     // the id to start at when looping through all ids.
     // this eliminates looping through all of the first valid entities
     startingId: u32
@@ -40,8 +37,6 @@ impl Simulation
         for _ in 0..MAX_ENTITIES
         {
             id = (self.startingId + i) % MAX_ENTITIES;
-            if id == 0
-                {i += 1; continue;}
             if self.Exists(id)
                 {i += 1; continue;}
 
@@ -61,7 +56,7 @@ impl Simulation
         self.entities[id as usize].is_some()
     }
 
-    fn FindEntitiesInView(&self, viewer: &Camera) -> Vec<u32>
+    fn FindEntitiesInView(&self, viewer: u32) -> Vec<u32>
     {
         let mut ids = vec![];
 
@@ -69,9 +64,8 @@ impl Simulation
         // TODO: spatial hashing
         for id in 0..MAX_ENTITIES
         {
-            if !self.Exists(id)
-                {break;}
-            ids.push(id);
+            if self.Exists(id)
+                {ids.push(id);}
         }
 
         ids
@@ -87,23 +81,24 @@ impl Simulation
         self.entities[id as usize].as_mut().expect("tried to get entity that does not exist")
     }
 
-    fn GetUpdateType(&self, viewer: &mut Camera, entity: &Entity) -> EntityUpdateType
+    fn GetUpdateType(&mut self, viewer: u32, entity: u32) -> EntityUpdateType
     {
-        if entity.camera.is_some() && entity.camera.as_ref().unwrap().ownerId != viewer.ownerId
-        { return EntityUpdateType::Private; }
+        if self.GetConstEntity(entity).camera.is_some() && self.GetConstEntity(entity).camera.as_ref().unwrap().ownerId != self.GetConstEntity(viewer).camera.as_ref().unwrap().ownerId
+            {return EntityUpdateType::Private;}
     
         let entitiesInView = self.FindEntitiesInView(viewer);
-        if !entitiesInView.contains(&entity.id)
+        if !entitiesInView.contains(&entity)
         {
-            viewer.view.remove(viewer.view.iter().position(|x| x == &entity.id).expect("trying to remove entity from view that is not in the view"));
+            let iterator = self.GetConstEntity(viewer).camera.as_ref().unwrap().view.iter().position(|x| x == &entity).expect("trying to remove entity from view that is not in the view");
+            self.GetEntity(viewer).camera.as_mut().unwrap().view.remove(iterator);
             return EntityUpdateType::Deleted;
         }
 
-        let isCreation = viewer.view.contains(&entity.id);
+        let isCreation = !self.GetConstEntity(viewer).camera.as_ref().unwrap().view.contains(&entity);
 
         if isCreation
         {
-            viewer.view.push(entity.id);
+            self.GetEntity(viewer).camera.as_mut().unwrap().view.push(entity);
             return EntityUpdateType::Created;
         }
         else
@@ -111,14 +106,14 @@ impl Simulation
     }
 
     // if the viewer is None, the entire simulation will be sent. if it is Some, then only the entities that the viewer can see will be sent
-    pub fn WriteBinary(&mut self, writer: &mut Writer, mut viewer: Option<&mut Camera>)
+    pub fn WriteBinary(&mut self, writer: &mut Writer, viewer: Option<u32>)
     {
         let mut deletions = vec![];
         let mut updates = vec![];
         let mut creations = vec![];
         let entitiesInView = match viewer
         {
-            Some(ref x) => self.FindEntitiesInView(x),
+            Some(x) => self.FindEntitiesInView(x),
             None => {
                 let mut entities = vec![];
                 for id in 0..MAX_ENTITIES
@@ -138,7 +133,7 @@ impl Simulation
                 {continue;}
             let entityType = match viewer
             {
-                Some(ref mut viewer) => self.GetUpdateType(viewer, self.GetConstEntity(i)),
+                Some(viewer) => self.GetUpdateType(viewer, i),
                 None => EntityUpdateType::Created
             };
             let entity = self.GetEntity(i);
@@ -153,19 +148,19 @@ impl Simulation
         }
 
         for id in deletions
-            {writer.Vu(id);}
+            {writer.Vu(id + 1);}
         writer.Vu(0);
         for id in updates
         {
             let entity = self.GetConstEntity(id);
-            writer.Vu(id);
+            writer.Vu(id + 1);
             entity.WriteBinaryUpdate(writer);
         }
         writer.Vu(0);
         for id in creations
         {
             let entity = self.GetConstEntity(id);
-            writer.Vu(id);
+            writer.Vu(id + 1);
             entity.WriteBinaryCreation(writer);
         }
 
@@ -176,17 +171,19 @@ impl Simulation
     {
         loop
         {
-            let id = reader.Vu();
+            let mut id = reader.Vu();
             if id == 0
                 {break;}
+            id -= 1;
             self.DeleteEntity(id)
         }
 
         loop
         {
-            let id = reader.Vu();
+            let mut id = reader.Vu();
             if id == 0
                 {break;}
+            id -= 1;
             if self.Exists(id)
                 {panic!("tried to update nonexistant entity");}
             self.GetEntity(id).ReadBinaryUpdate(reader);    
@@ -195,9 +192,11 @@ impl Simulation
 
         loop
         {
-            let id = reader.Vu();
+            let mut id = reader.Vu();
             if id == 0
                 {break;}
+
+            id -= 1;
 
             self.entities[id as usize] = Some(Entity::New());
             self.GetEntity(id).id = id;
