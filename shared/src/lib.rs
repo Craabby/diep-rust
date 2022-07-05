@@ -6,3 +6,5 @@ pub mod Simulation;
 pub mod Coder;
 #[allow(non_snake_case)]
 pub mod Types;
+#[allow(non_snake_case)]
+pub mod SimulationFactory;

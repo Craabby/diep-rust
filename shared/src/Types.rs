@@ -8,3 +8,4 @@ pub enum EntityUpdateType
 }
 
 pub const MAX_ENTITIES: u32 = 6;
+pub const MAX_SIMULATIONS: u32 = 1;

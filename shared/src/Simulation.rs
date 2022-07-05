@@ -10,16 +10,18 @@ pub struct Simulation
     entities: Box<[Option<Entity>; MAX_ENTITIES as usize]>,
     // the id to start at when looping through all ids.
     // this eliminates looping through all of the first valid entities
-    startingId: u32
+    startingId: u32,
+    // the simulation's id. useful for when you have multiple simulations
+    id: u32
 }
 
 impl Simulation
 {
-    pub fn New() -> Simulation
+    pub fn New(id: u32) -> Simulation
     {
         // bruh... https://github.com/rust-lang/rust/issues/44796
         const NONE: Option<Entity> = None;
-        Simulation{entities: Box::new([NONE; MAX_ENTITIES as usize]), startingId: 0}
+        Simulation{entities: Box::new([NONE; MAX_ENTITIES as usize]), startingId: 0, id}
     }
 
     pub fn DeleteEntity(&mut self, id: u32)
