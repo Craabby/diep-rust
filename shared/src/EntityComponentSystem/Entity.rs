@@ -61,7 +61,7 @@ impl Entity
         self.ReadBinaryComponents(reader)
     }
 
-    pub fn ReadBInaryCreation(&mut self, reader: &mut Reader)
+    pub fn ReadBinaryCreation(&mut self, reader: &mut Reader)
     {
         let componentFlags = reader.Vu();
         if (componentFlags & (1 << Camera::ID)) != 0

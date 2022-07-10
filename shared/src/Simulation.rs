@@ -202,7 +202,7 @@ impl Simulation
 
             self.entities[id as usize] = Some(Entity::New());
             self.GetEntity(id).id = id;
-            self.GetEntity(id).ReadBInaryCreation(reader);
+            self.GetEntity(id).ReadBinaryCreation(reader);
         }
     }
 }
